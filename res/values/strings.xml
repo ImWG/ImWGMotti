@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">百花容道</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    
+    <string name="menu_setpieceskin">设置板块皮肤</string>
+    <string name="menu_playsound">■播放声音</string>
+    <string name="menu_playsound_">□播放声音</string>
+    <string name="menu_animate">■动画效果</string>
+    <string name="menu_animate_">□动画效果</string>
+    
+</resources>
