@@ -134,7 +134,7 @@ public class Board extends SurfaceView{
 				    		}
 			    		}while(!(mt==m2 && nt==n2));
 			    		
-			    		if (moveable){
+			    		if (moveable && !(piece.x == m2 && piece.y == n2)){
 			    			piece.x = m2;
 			    			piece.y = n2;
 			    			++MainActivity.movedsteps;

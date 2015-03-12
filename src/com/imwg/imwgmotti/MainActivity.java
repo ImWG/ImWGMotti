@@ -5,6 +5,7 @@ import com.example.imwgmotti.R;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -39,7 +40,12 @@ public class MainActivity extends Activity {
 	static SharedPreferences pref;
 	static boolean animated;
 	
+	static Handler texthandler;
+	static Thread textthread;
+	static int texttype;
+	static int textperiod;
 	
+	@SuppressLint("HandlerLeak")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,9 +77,7 @@ public class MainActivity extends Activity {
 		levels = new Levels();
 		//levels.addLevel(Level.demoLevel());
 		levels.loadLevels(FileChoose.getLevels(this, ""));
-		board.loadLevel(levels.getLevel(current_level));
-		updateLevelText();
-		
+		board.loadLevel(levels.getLevel(current_level));		
 		
 		findViewById(R.id.prevbutton).setOnClickListener(new OnClickListener(){
 			@Override
@@ -153,8 +157,51 @@ public class MainActivity extends Activity {
 			}
 		});
 		flashthread.start();
+		
+		texthandler = new Handler(){
+			public void handleMessage(Message msg){
+				if(texttype == 0)
+					levelinfo.setText(String.format("%03d/%03d", current_level, levels.getLevelNum()));
+				else
+					levelinfo.setText(String.format("×ßÁË%d²½", movedsteps));
+			}
+		};
+		
+		textthread = new Thread(new Runnable(){
+			
+			@Override
+			public void run() {
+				while(true){
+					try {
+						if (textperiod == 0 || textperiod == 3){
+							if (textperiod == 0)
+								texttype = 0;
+							else
+								texttype = 1;
+							texthandler.sendMessage(new Message());
+						}
+						++textperiod;
+						if (textperiod >= 6)
+							textperiod = 0;
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
+		});
+		
+		textthread.start();
 	
 	}
+	
+	@SuppressWarnings("deprecation")
+	@Override
+	protected void onDestroy(){
+		super.onDestroy();
+	}
+	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -227,15 +274,19 @@ public class MainActivity extends Activity {
 		
 	}
 	
-	static void updateLevelText(){
-		levelinfo.setText(String.format("%03d/%03d", current_level, levels.getLevelNum()));
+	static void restoreLevelText(){
+		textperiod = 0;
 	}
+	static void updateLevelText(){
+		texthandler.sendMessage(new Message());
+	}
+	
 	
 	static void gotoLevel(int levelid){
 		current_level = levelid;
 		movedsteps = 0;
 		board.loadLevel(levels.getLevel(levelid));
-		updateLevelText();
+		restoreLevelText();
 		Editor editor = MainActivity.pref.edit();
 		editor.putInt("currentlevel", current_level);
 		editor.commit();
